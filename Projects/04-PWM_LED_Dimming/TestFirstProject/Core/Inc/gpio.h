@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : TIM.h
-  * Description        : This file provides code for the configuration
-  *                      of the TIM instances.
+  * File Name          : gpio.h
+  * Description        : This file contains all the functions prototypes for 
+  *                      the gpio  
   ******************************************************************************
   * @attention
   *
@@ -16,9 +16,10 @@
   *
   ******************************************************************************
   */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __tim_H
-#define __tim_H
+#ifndef __gpio_H
+#define __gpio_H
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -30,18 +31,12 @@
 
 /* USER CODE END Includes */
 
-extern TIM_HandleTypeDef htim4;
-extern TIM_HandleTypeDef htim14;
-
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-void MX_TIM4_Init(void);
-void MX_TIM14_Init(void);
-                        
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-                    
+void MX_GPIO_Init(void);
+
 /* USER CODE BEGIN Prototypes */
 
 /* USER CODE END Prototypes */
@@ -49,7 +44,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ tim_H */
+#endif /*__ pinoutConfig_H */
 
 /**
   * @}

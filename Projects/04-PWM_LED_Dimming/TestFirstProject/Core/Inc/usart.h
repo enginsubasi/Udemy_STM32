@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : TIM.h
+  * File Name          : USART.h
   * Description        : This file provides code for the configuration
-  *                      of the TIM instances.
+  *                      of the USART instances.
   ******************************************************************************
   * @attention
   *
@@ -17,8 +17,8 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __tim_H
-#define __tim_H
+#ifndef __usart_H
+#define __usart_H
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -30,18 +30,14 @@
 
 /* USER CODE END Includes */
 
-extern TIM_HandleTypeDef htim4;
-extern TIM_HandleTypeDef htim14;
+extern UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-void MX_TIM4_Init(void);
-void MX_TIM14_Init(void);
-                        
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-                    
+void MX_USART2_UART_Init(void);
+
 /* USER CODE BEGIN Prototypes */
 
 /* USER CODE END Prototypes */
@@ -49,7 +45,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ tim_H */
+#endif /*__ usart_H */
 
 /**
   * @}

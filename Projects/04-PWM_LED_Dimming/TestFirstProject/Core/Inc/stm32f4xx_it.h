@@ -1,9 +1,8 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file           : main.h
-  * @brief          : Header for main.c file.
-  *                   This file contains the common defines of the application.
+  * @file    stm32f4xx_it.h
+  * @brief   This file contains the headers of the interrupt handlers.
   ******************************************************************************
   * @attention
   *
@@ -15,21 +14,17 @@
   * License. You may obtain a copy of the License at:
   *                        opensource.org/licenses/BSD-3-Clause
   *
-  ******************************************************************************
+ ******************************************************************************
   */
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
+#ifndef __STM32F4xx_IT_H
+#define __STM32F4xx_IT_H
 
 #ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal.h"
+ extern "C" {
+#endif 
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -52,39 +47,26 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void);
-
+void NMI_Handler(void);
+void HardFault_Handler(void);
+void MemManage_Handler(void);
+void BusFault_Handler(void);
+void UsageFault_Handler(void);
+void SVC_Handler(void);
+void DebugMon_Handler(void);
+void PendSV_Handler(void);
+void SysTick_Handler(void);
+void USART2_IRQHandler(void);
+void TIM8_TRG_COM_TIM14_IRQHandler(void);
+void DMA2_Stream0_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
-
-/* Private defines -----------------------------------------------------------*/
-#define ACC_CS_Pin GPIO_PIN_3
-#define ACC_CS_GPIO_Port GPIOE
-#define USER_BUTTON_Pin GPIO_PIN_0
-#define USER_BUTTON_GPIO_Port GPIOA
-#define PWM_GREEN_Pin GPIO_PIN_12
-#define PWM_GREEN_GPIO_Port GPIOD
-#define PWM_ORANGE_Pin GPIO_PIN_13
-#define PWM_ORANGE_GPIO_Port GPIOD
-#define PWM_RED_Pin GPIO_PIN_14
-#define PWM_RED_GPIO_Port GPIOD
-#define PWM_BLUE_Pin GPIO_PIN_15
-#define PWM_BLUE_GPIO_Port GPIOD
-#define AUD_RST_Pin GPIO_PIN_4
-#define AUD_RST_GPIO_Port GPIOD
-#define ACC_INT_1_Pin GPIO_PIN_0
-#define ACC_INT_1_GPIO_Port GPIOE
-#define ACC_INT_2_Pin GPIO_PIN_1
-#define ACC_INT_2_GPIO_Port GPIOE
-/* USER CODE BEGIN Private defines */
-
-/* USER CODE END Private defines */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __MAIN_H */
+#endif /* __STM32F4xx_IT_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
