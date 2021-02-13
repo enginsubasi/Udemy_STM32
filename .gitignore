@@ -1,0 +1,16 @@
+
+Projects/TestFirstProject/.mxproject
+Projects/TestFirstProject/Core/Inc/adc.h
+Projects/TestFirstProject/Core/Inc/main.h
+Projects/TestFirstProject/Core/Inc/stm32f4xx_it.h
+Projects/TestFirstProject/Core/Inc/tim.h
+Projects/TestFirstProject/Core/Src/adc.c
+Projects/TestFirstProject/Core/Src/dma.c
+Projects/TestFirstProject/Core/Src/gpio.c
+Projects/TestFirstProject/Core/Src/i2s.c
+Projects/TestFirstProject/Core/Src/main.c
+Projects/TestFirstProject/Core/Src/spi.c
+Projects/TestFirstProject/Core/Src/stm32f4xx_it.c
+Projects/TestFirstProject/Core/Src/tim.c
+Projects/TestFirstProject/Core/Src/usart.c
+Projects/TestFirstProject/TestFirstProject.ioc
