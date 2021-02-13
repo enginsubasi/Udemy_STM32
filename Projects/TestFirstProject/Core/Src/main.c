@@ -31,7 +31,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "LIS3DSH.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,8 +63,12 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-uint16_t adc1reg[3];
-uint16_t adc2reg[2];
+struct
+{
+    uint32_t us;
+    uint32_t distance;
+    uint8_t digital;
+}hcsr04;
 
 /* USER CODE END 0 */
 
@@ -98,7 +102,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_ADC1_Init();
   MX_I2C1_Init();
   MX_I2S3_Init();
   MX_SPI1_Init();
@@ -106,22 +109,30 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC2_Init();
   MX_TIM4_Init();
+  MX_TIM13_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_PWM_Start ( &htim4, TIM_CHANNEL_1 );
+  HAL_TIM_PWM_Start ( &htim4, TIM_CHANNEL_2 );
+  HAL_TIM_PWM_Start ( &htim4, TIM_CHANNEL_3 );
+  HAL_TIM_PWM_Start ( &htim4, TIM_CHANNEL_4 );
 
-  HAL_ADC_Start_DMA ( &hadc1, adc1reg, 3 );
-  HAL_ADC_Start_DMA ( &hadc2, adc2reg, 2 );
-
+  __HAL_TIM_SET_COMPARE ( &htim4, TIM_CHANNEL_1, 0);
+  __HAL_TIM_SET_COMPARE ( &htim4, TIM_CHANNEL_2, 0);
+  __HAL_TIM_SET_COMPARE ( &htim4, TIM_CHANNEL_3, 0);
+  __HAL_TIM_SET_COMPARE ( &htim4, TIM_CHANNEL_4, 0);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-        HAL_ADC_Start_DMA ( &hadc1, adc1reg, 3 );
-        HAL_ADC_Start_DMA ( &hadc2, adc2reg, 2 );
+      HAL_GPIO_WritePin(TRIG_GPIO_Port, TRIG_Pin, GPIO_PIN_SET);
+      HAL_Delay(1);
+      HAL_GPIO_WritePin(TRIG_GPIO_Port, TRIG_Pin, GPIO_PIN_RESET);
 
-        HAL_Delay ( 10 );
+      hcsr04.digital = HAL_GPIO_ReadPin ( TRIG_GPIO_Port, TRIG_Pin );
 
+      HAL_Delay ( 100 );
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -180,6 +191,32 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/*
+ * @about: Global external interrupt callback
+ */
+void HAL_GPIO_EXTI_Callback ( uint16_t GPIO_Pin )
+{
+    if ( GPIO_Pin == ECHO_Pin )
+    {
+        if ( HAL_GPIO_ReadPin ( ECHO_GPIO_Port, ECHO_Pin ) == GPIO_PIN_SET )
+        {
+            __HAL_TIM_SetCounter ( &htim13, 0 );
+            HAL_TIM_Base_Start ( &htim13 );
+        }
+        else
+        {
+            HAL_TIM_Base_Stop ( &htim13 );
+            hcsr04.us = __HAL_TIM_GetCounter ( &htim13 );
+            hcsr04.distance = ( hcsr04.us * 10 ) / 58;
+        }
+    }
+    else
+    {
+        // Intentionally blank.
+    }
+}
+
 
 /* USER CODE END 4 */
 

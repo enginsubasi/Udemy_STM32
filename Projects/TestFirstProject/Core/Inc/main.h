@@ -59,22 +59,28 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define ACC_CS_Pin GPIO_PIN_3
+#define ACC_CS_GPIO_Port GPIOE
 #define USER_BUTTON_Pin GPIO_PIN_0
 #define USER_BUTTON_GPIO_Port GPIOA
-#define PWM_GREEN_Pin GPIO_PIN_12
-#define PWM_GREEN_GPIO_Port GPIOD
-#define PWM_ORANGE_Pin GPIO_PIN_13
-#define PWM_ORANGE_GPIO_Port GPIOD
-#define PWM_RED_Pin GPIO_PIN_14
-#define PWM_RED_GPIO_Port GPIOD
-#define PWM_BLUE_Pin GPIO_PIN_15
-#define PWM_BLUE_GPIO_Port GPIOD
+#define ECHO_Pin GPIO_PIN_1
+#define ECHO_GPIO_Port GPIOA
+#define ECHO_EXTI_IRQn EXTI1_IRQn
+#define TRIG_Pin GPIO_PIN_2
+#define TRIG_GPIO_Port GPIOA
+#define GREEN_YN_Pin GPIO_PIN_12
+#define GREEN_YN_GPIO_Port GPIOD
+#define ORANGE_XP_Pin GPIO_PIN_13
+#define ORANGE_XP_GPIO_Port GPIOD
+#define RED_YP_Pin GPIO_PIN_14
+#define RED_YP_GPIO_Port GPIOD
+#define BLUE_XN_Pin GPIO_PIN_15
+#define BLUE_XN_GPIO_Port GPIOD
 #define AUD_RST_Pin GPIO_PIN_4
 #define AUD_RST_GPIO_Port GPIOD
 #define ACC_INT_1_Pin GPIO_PIN_0
 #define ACC_INT_1_GPIO_Port GPIOE
-#define ACC_INT_2_Pin GPIO_PIN_1
-#define ACC_INT_2_GPIO_Port GPIOE
+#define ACC_INT_1_EXTI_IRQn EXTI0_IRQn
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
