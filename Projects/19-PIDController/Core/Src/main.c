@@ -24,7 +24,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <math.h>
+#include "pid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,6 +53,7 @@ I2S_HandleTypeDef hi2s3;
 SPI_HandleTypeDef hspi1;
 
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim7;
 
 UART_HandleTypeDef huart2;
 
@@ -69,6 +71,7 @@ static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM7_Init(void);
 void MX_USB_HOST_Process(void);
 
 /* USER CODE BEGIN PFP */
@@ -77,6 +80,55 @@ void MX_USB_HOST_Process(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+#define KP 10
+#define KI 1
+#define KD 0
+#define TS 0.01
+
+uint8_t u2rx = 0;
+
+uint32_t adcRawValue = 0;
+float temperature = 0;
+float temperatureFiltered = 0;
+float filterRate = 0.1;
+
+float temperatureSetPoint = 50;
+
+pidc_t pid;
+
+void powerDriver ( float inp )
+{
+	if ( inp > 100 )
+	{
+		inp = 99.9;
+	}
+	else if (inp < 0 )
+	{
+		inp = 0;
+	}
+
+	__HAL_TIM_SET_COMPARE ( &htim3, TIM_CHANNEL_1, (uint32_t) inp * 10 );
+}
+
+float adcToTemp ( uint32_t adcRaw ) //Calculate temperature from 10 bit ADC value
+{
+	float adcRawVar = adcRaw;
+	// T = ( 1 / a + b ( Ln Rt / R25 ) + c ( Ln Rt / R25 ) 2 + d ( Ln Rt / R25 ) ) - 273
+	float Vo=3*adcRawVar/4095;
+	float RtRT25=(Vo*10000/(3-Vo))/30000;
+
+	if((RtRT25<60.16)&&(RtRT25>3.195))
+		return((1/(3.3545590E-3+(2.5903082E-4*log(RtRT25))+(4.1929419E-6*pow(log(RtRT25),2))+(-7.1497776E-8*pow(log(RtRT25),3))))-273);
+	else if((RtRT25<3.195)&&(RtRT25>0.3636))
+		return((1/(3.3540178E-3+(2.6021087E-4*log(RtRT25))+(3.5946173E-6*pow(log(RtRT25),2))+(-8.5676875E-8*pow(log(RtRT25),3))))-273);
+	else if((RtRT25<0.3636)&&(RtRT25>0.06933))
+		return((1/(3.3531474E-3+(2.5743868E-4*log(RtRT25))+(1.7022402E-6*pow(log(RtRT25),2))+(-8.8297492E-8*pow(log(RtRT25),3))))-273);
+	else if((RtRT25<0.06933)&&(RtRT25>0.0187))
+		return((1/(3.3547977E-3+(2.5879299E-4*log(RtRT25))+(1.8964602E-6*pow(log(RtRT25),2))+(-1.1884916E-7*pow(log(RtRT25),3))))-273);
+	else
+		return(255.0); //Error Value
+}
 
 /* USER CODE END 0 */
 
@@ -117,7 +169,15 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM3_Init();
   MX_USART2_UART_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
+  HAL_UART_Receive_IT ( &huart2, &u2rx, 1 );
+  HAL_TIM_Base_Start_IT ( &htim7 );
+
+  HAL_TIM_PWM_Start ( &htim3, TIM_CHANNEL_1 );
+  __HAL_TIM_SET_COMPARE ( &htim3, TIM_CHANNEL_1, 0 );
+
+  pidInit ( &pid, KP, KI, KD, TS, 100, -100, 100, 0, 100, 0 );
 
   /* USER CODE END 2 */
 
@@ -125,6 +185,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 
@@ -206,13 +268,13 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
@@ -222,7 +284,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_144CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -358,7 +420,7 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 141;
+  htim3.Init.Prescaler = 83;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 999;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -385,6 +447,44 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
+  * @brief TIM7 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM7_Init(void)
+{
+
+  /* USER CODE BEGIN TIM7_Init 0 */
+
+  /* USER CODE END TIM7_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM7_Init 1 */
+
+  /* USER CODE END TIM7_Init 1 */
+  htim7.Instance = TIM7;
+  htim7.Init.Prescaler = 167;
+  htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim7.Init.Period = 9999;
+  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM7_Init 2 */
+
+  /* USER CODE END TIM7_Init 2 */
 
 }
 
@@ -530,6 +630,39 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if ( htim->Instance == TIM7 )
+    {
+    	// 10ms
+    	temperature = adcToTemp ( adcRawValue );
+    	temperatureFiltered = ( temperature * filterRate ) +  ( temperatureFiltered * ( 1 - filterRate ) );
+
+    	pidControl ( &pid, ( temperatureSetPoint - temperatureFiltered ) );
+
+    	powerDriver ( pidGetOutput ( &pid ) );
+
+    	HAL_ADC_Start_DMA ( &hadc1, (uint32_t *)&adcRawValue, 1 );
+    }
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if ( huart->Instance == USART2 )
+    {
+
+    }
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if ( huart->Instance == USART2 )
+    {
+
+        HAL_UART_Receive_IT ( &huart2, &u2rx, 1 );
+    }
+}
 
 /* USER CODE END 4 */
 

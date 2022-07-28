@@ -1,0 +1,4 @@
+pid.c:33:6:pidInit	0	static
+pid.c:61:6:pidChangeCoefficients	0	static
+pid.c:74:6:pidControl	0	static
+pid.c:141:7:pidGetOutput	0	static

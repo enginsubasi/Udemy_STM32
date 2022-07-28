@@ -1,3 +1,8 @@
-main.c:140:6:SystemClock_Config	112	static
-main.c:87:5:main	80	static
-main.c:540:6:Error_Handler	0	static
+main.c:100:6:powerDriver	0	static
+main.c:114:7:adcToTemp	40	static
+main.c:202:6:SystemClock_Config	112	static
+main.c:139:5:main	80	static
+main.c:634:6:HAL_TIM_PeriodElapsedCallback	8	static
+main.c:650:6:HAL_UART_TxCpltCallback	0	static
+main.c:658:6:HAL_UART_RxCpltCallback	0	static
+main.c:673:6:Error_Handler	0	static

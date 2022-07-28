@@ -36,7 +36,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_hcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
- ../USB_HOST/App/usb_host.h
+ ../USB_HOST/App/usb_host.h \
+ C:/Users/engin/Documents/GitHub/esclib/inc/control/pid.h
 
 ../Core/Inc/main.h:
 
@@ -115,3 +116,5 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
 
 ../USB_HOST/App/usb_host.h:
+
+C:/Users/engin/Documents/GitHub/esclib/inc/control/pid.h:
