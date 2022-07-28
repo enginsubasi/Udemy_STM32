@@ -1,7 +1,3 @@
-
-
-
-
 float pid ( float error )
 {
     static float kp = 1;
