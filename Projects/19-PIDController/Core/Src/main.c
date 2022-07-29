@@ -25,7 +25,11 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <math.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "pid.h"
+#include "com.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -95,7 +99,10 @@ float filterRate = 0.1;
 
 float temperatureSetPoint = 50;
 
+uint8_t controlActivation = FALSE;
+
 pidc_t pid;
+com_t com;
 
 void powerDriver ( float inp )
 {
@@ -128,6 +135,62 @@ float adcToTemp ( uint32_t adcRaw ) //Calculate temperature from 10 bit ADC valu
 		return((1/(3.3547977E-3+(2.5879299E-4*log(RtRT25))+(1.8964602E-6*pow(log(RtRT25),2))+(-1.1884916E-7*pow(log(RtRT25),3))))-273);
 	else
 		return(255.0); //Error Value
+}
+
+void appLevelComProcessor ( com_t *driver )
+{
+	if ( strstr ( ( char* ) driver->rxBuffer, "AT+PIDPRM=" ) != 0 )
+	{
+		char* tempPtr = driver->rxBuffer;
+		float kpLocal = 0;
+		float kiLocal = 0;
+		float kdLocal = 0;
+		float tsLocal = 0;
+
+		tempPtr += ( strlen ( "AT+PIDPRM=" ) );
+		kpLocal = atof ( tempPtr );
+
+		tempPtr = strstr ( tempPtr, "," ) + 1;
+		kiLocal = atof ( tempPtr );
+
+		tempPtr = strstr ( tempPtr, "," ) + 1;
+		kdLocal = atof ( tempPtr );
+
+		tempPtr = strstr ( tempPtr, "," ) + 1;
+		tsLocal = atof ( tempPtr );
+
+		pidChangeCoefficients ( &pid, kpLocal, kiLocal, kdLocal, tsLocal );
+
+		strcpy ( ( char* ) driver->txBuffer, "OK\r\n" );
+		driver->txIndex = strlen ( ( char* ) driver->txBuffer );
+	}
+	else if ( strstr ( ( char* ) driver->rxBuffer, "AT+SETPOINT=" ) != 0 )
+	{
+		temperatureSetPoint = atof ( ( char* ) driver->rxBuffer + 12 );
+
+		strcpy ( ( char* ) driver->txBuffer, "OK\r\n" );
+		driver->txIndex = strlen ( ( char* ) driver->txBuffer );
+	}
+	else if ( strstr ( ( char* ) driver->rxBuffer, "AT+CONTROL=" ) != 0 )
+	{
+		if ( driver->rxBuffer [ 11 ] == '1' )
+		{
+			controlActivation = TRUE;
+		}
+		else
+		{
+			controlActivation = FALSE;
+		}
+
+		strcpy ( ( char* ) driver->txBuffer, "OK\r\n" );
+		driver->txIndex = strlen ( ( char* )driver->txBuffer );
+	}
+	else if ( strstr ( ( char* ) driver->rxBuffer, "AT+TEMPERATURE?" ) != 0 )
+	{
+
+		sprintf ( ( char* ) driver->txBuffer, "+TEMPERATURE=%.2f,%d\r\n", temperatureFiltered, ( int ) HAL_GetTick ( ) );
+		driver->txIndex = strlen ( ( char* ) driver->txBuffer );
+	}
 }
 
 /* USER CODE END 0 */
@@ -177,7 +240,8 @@ int main(void)
   HAL_TIM_PWM_Start ( &htim3, TIM_CHANNEL_1 );
   __HAL_TIM_SET_COMPARE ( &htim3, TIM_CHANNEL_1, 0 );
 
-  pidInit ( &pid, KP, KI, KD, TS, 100, -100, 100, 0, 100, 0 );
+  pidInit ( &pid, KP, KI, KD, TS, 50, -50, 50, -50, 100, 0 );
+  comInit ( &com, 5 );
 
   /* USER CODE END 2 */
 
@@ -185,7 +249,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if ( comIsRxBufferReady ( &com ) == TRUE )
+	  {
+		  appLevelComProcessor ( &com );
 
+		  if ( comGetTxBufferIndex ( &com ) != 0 )
+		  {
+			  HAL_UART_Transmit_IT ( &huart2, com.txBuffer, com.txIndex );
+			  comSetTxBufferIndex ( &com, 0 );
+		  }
+
+		  comRxBufferProcessed ( &com );
+	  }
 
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
@@ -641,9 +716,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
     	pidControl ( &pid, ( temperatureSetPoint - temperatureFiltered ) );
 
-    	powerDriver ( pidGetOutput ( &pid ) );
+    	if ( controlActivation == TRUE )
+    	{
+    		powerDriver ( pidGetOutput ( &pid ) );
+    	}
+    	else
+    	{
+    		powerDriver ( 0 );
+    	}
+
 
     	HAL_ADC_Start_DMA ( &hadc1, (uint32_t *)&adcRawValue, 1 );
+
+    	comTimeoutCounter ( &com );
     }
 }
 
@@ -659,6 +744,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if ( huart->Instance == USART2 )
     {
+    	comGetData ( &com, u2rx );
 
         HAL_UART_Receive_IT ( &huart2, &u2rx, 1 );
     }

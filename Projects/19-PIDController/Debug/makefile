@@ -43,7 +43,7 @@ all: PIDController.elf secondary-outputs
 
 # Tool invocations
 PIDController.elf: $(OBJS) $(USER_OBJS) C:\Users\engin\Documents\GitHub\Udemy_STM32\Projects\19-PIDController\STM32F407VGTX_FLASH.ld
-	arm-none-eabi-gcc -o "PIDController.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\engin\Documents\GitHub\Udemy_STM32\Projects\19-PIDController\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PIDController.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "PIDController.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\engin\Documents\GitHub\Udemy_STM32\Projects\19-PIDController\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PIDController.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
