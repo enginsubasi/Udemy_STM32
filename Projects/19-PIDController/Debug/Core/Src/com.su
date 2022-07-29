@@ -1,7 +1,7 @@
 com.c:10:6:comInit	4	static
 com.c:29:6:comGetData	4	static
-com.c:44:6:comTimeoutCounter	0	static
-com.c:58:9:comIsRxBufferReady	0	static
-com.c:63:6:comRxBufferProcessed	0	static
-com.c:68:10:comGetTxBufferIndex	0	static
-com.c:73:6:comSetTxBufferIndex	0	static
+com.c:74:6:comTimeoutCounter	0	static
+com.c:88:9:comIsRxBufferReady	0	static
+com.c:93:6:comRxBufferProcessed	0	static
+com.c:99:10:comGetTxBufferIndex	0	static
+com.c:104:6:comSetTxBufferIndex	0	static

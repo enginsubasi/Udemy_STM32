@@ -241,7 +241,7 @@ int main(void)
   __HAL_TIM_SET_COMPARE ( &htim3, TIM_CHANNEL_1, 0 );
 
   pidInit ( &pid, KP, KI, KD, TS, 50, -50, 50, -50, 100, 0 );
-  comInit ( &com, 5 );
+  comInit ( &com, 10 );
 
   /* USER CODE END 2 */
 
@@ -263,7 +263,7 @@ int main(void)
 	  }
 
     /* USER CODE END WHILE */
-    MX_USB_HOST_Process();
+    //MX_USB_HOST_Process();
 
     /* USER CODE BEGIN 3 */
   }

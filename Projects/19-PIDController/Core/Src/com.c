@@ -30,13 +30,43 @@ void comGetData ( com_t* driver, uint8_t data )
 {
 	if ( driver->rxReady == FALSE )
 	{
-		driver->rxBuffer[ driver->rxIndex ] = data;
-		++driver->rxIndex;
-
-		if ( ( driver->rxBuffer[ driver->rxIndex - 2 ] == '\r' ) && ( driver->rxBuffer[ driver->rxIndex - 1 ] == '\n' ) )
+		if ( driver->rxIndex == 0 )
 		{
-			driver->rxReady = TRUE;
-			driver->rxTimeoutCounter = 0;
+			if ( data == 'A' )
+			{
+				driver->rxBuffer[ driver->rxIndex ] = data;
+				++driver->rxIndex;
+			}
+			else
+			{
+				driver->rxIndex = 0;
+				driver->rxTimeoutCounter = 0;
+			}
+		}
+		else if ( driver->rxIndex == 1 )
+		{
+			if ( data == 'T' )
+			{
+				driver->rxBuffer[ driver->rxIndex ] = data;
+				++driver->rxIndex;
+			}
+			else
+			{
+				driver->rxIndex = 0;
+				driver->rxTimeoutCounter = 0;
+			}
+		}
+		else
+		{
+			driver->rxBuffer[ driver->rxIndex ] = data;
+			++driver->rxIndex;
+
+			if ( ( driver->rxBuffer[ driver->rxIndex - 2 ] == '\r' ) && ( driver->rxBuffer[ driver->rxIndex - 1 ] == '\n' ) )
+			{
+				driver->rxReady = TRUE;
+				driver->rxTimeoutCounter = 0;
+				driver->rxBuffer[ driver->rxIndex ] = 0;
+			}
 		}
 	}
 }
@@ -63,6 +93,7 @@ uint8_t comIsRxBufferReady ( com_t* driver )
 void comRxBufferProcessed ( com_t* driver )
 {
 	driver->rxReady = FALSE;
+	driver->rxIndex = 0;
 }
 
 uint32_t comGetTxBufferIndex ( com_t* driver )
